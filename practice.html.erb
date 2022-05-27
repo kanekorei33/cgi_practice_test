@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <h1>ゴーヤだいすきー</h1>
+
+    <% require 'pg' %>
+
+    <% connection = PG::connect(dbname: "goya") %>
+    <% connection.internal_encoding = "UTF-8" %>
+
+ <% result = connection.exec("select * from crops WHERE NOT(give_for='自家消費');") %>
+    <% data = [] %>
+
+    <% result.each do |record| %>
+      <%  data << "ゴーヤの品質:#{record["quality"]} ゴーヤの譲渡先：#{record["give_for"]}" %>
+    <% end %>
+
+    <form action="indicate_goya.cgi" method="POST">
+       下記のボタンを押すと、ゴーヤの譲渡先が自家消費ではないものの情報ページに飛びます<br><br>
+      <input type="text"  name="goya_give" value="<%= data.join(' ') %>">
+      <input type="submit" name="送信" >
+    </form>
+
+    <% result = connection.exec("select* from crops WHERE quality = false;") %>
+    <% data = [] %>
+
+    <% result.each do |record| %>
+      <%  data << "ゴーヤの品質:#{record["quality"]} ゴーヤの譲渡先：#{record["give_for"]}" %>
+    <% end %>
+
+    <form action="indicate_goya_false.cgi" method="POST">
+       下記のボタンを押すと、品質が悪いゴーヤの情報を載せたページに飛びます<br><br>
+       <!-- valueには、送りたいデータを代入する -->
+       <!-- name="goya"を、情報の目印とする -->
+      <input type="text" name="goya_false" value="<%= data.join(' ') %>">
+      <input type="submit" name="送信" >
+    </form>
+  </body>
+</html>
